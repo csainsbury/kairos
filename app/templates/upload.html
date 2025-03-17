@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Upload - kAIros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        select, input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-left: 4px solid #4caf50;
+            background-color: #e8f5e9;
+            display: none;
+        }
+        .error {
+            margin-top: 20px;
+            padding: 15px;
+            border-left: 4px solid #f44336;
+            background-color: #ffebee;
+            display: none;
+        }
+        .summary {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-line;
+        }
+        .project-container {
+            margin-bottom: 20px;
+        }
+        .project-selector {
+            margin-bottom: 10px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4285f4;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>kAIros Document Upload</h1>
+    
+    <div class="card">
+        <h2>Upload Document</h2>
+        <p>Upload a PDF or text file to be summarized and associated with a project.</p>
+        
+        <div class="project-container">
+            <label for="project-select">Select Project:</label>
+            <select id="project-select">
+                <option value="">-- Loading Projects --</option>
+            </select>
+            <button id="refresh-projects">Refresh Projects</button>
+        </div>
+        
+        <form id="upload-form">
+            <label for="document">Select Document (PDF or text file):</label>
+            <input type="file" id="document" name="file" accept=".pdf,.txt" required>
+            
+            <button type="submit" id="upload-button">Upload and Summarize</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing document...</p>
+        </div>
+        
+        <div class="result" id="result">
+            <h3>Document Uploaded Successfully</h3>
+            <p id="result-filename"></p>
+            <h4>Summary:</h4>
+            <div class="summary" id="summary"></div>
+        </div>
+        
+        <div class="error" id="error">
+            <h3>Error</h3>
+            <p id="error-message"></p>
+        </div>
+    </div>
+    
+    <script>
+        // Load projects when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProjects();
+        });
+        
+        // Refresh projects button
+        document.getElementById('refresh-projects').addEventListener('click', function() {
+            loadProjects();
+        });
+        
+        // Handle form submission
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const projectId = document.getElementById('project-select').value;
+            const fileInput = document.getElementById('document');
+            
+            if (!projectId) {
+                showError('Please select a project.');
+                return;
+            }
+            
+            if (!fileInput.files[0]) {
+                showError('Please select a file to upload.');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('project_id', projectId);
+            
+            // Show loading indicator
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            
+            // Send request
+            fetch('/documents/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.status === 'success') {
+                    document.getElementById('result-filename').textContent = 'Filename: ' + data.filename;
+                    document.getElementById('summary').textContent = data.summary;
+                    document.getElementById('result').style.display = 'block';
+                } else {
+                    showError(data.message || 'Unknown error occurred');
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                showError('Error uploading file: ' + error.message);
+            });
+        });
+        
+        // Load projects from API
+        function loadProjects() {
+            const select = document.getElementById('project-select');
+            select.innerHTML = '<option value="">-- Loading Projects --</option>';
+            
+            fetch('/api/projects')
+            .then(response => response.json())
+            .then(data => {
+                select.innerHTML = '';
+                
+                if (data.projects && data.projects.length > 0) {
+                    data.projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = project.name;
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">No projects found</option>';
+                }
+            })
+            .catch(error => {
+                select.innerHTML = '<option value="">Error loading projects</option>';
+                console.error('Error loading projects:', error);
+            });
+        }
+        
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('error');
+            document.getElementById('error-message').textContent = message;
+            errorElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
