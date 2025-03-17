@@ -15,6 +15,7 @@ python-dotenv==1.0.0
 
 # API interaction
 requests==2.28.2
+dateparser==1.1.8
 
 # File upload handling
 python-magic==0.4.27

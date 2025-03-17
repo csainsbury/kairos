@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .chat-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #e1f3fb;
+            margin-left: auto;
+            text-align: right;
+        }
+        .system-message {
+            background-color: #f0f0f0;
+        }
+        .input-area {
+            display: flex;
+            margin-top: 10px;
+        }
+        #message-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        .task-suggestion {
+            background-color: #e8f5e9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .domain-tag {
+            display: inline-block;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+        .work {
+            background-color: #c8e6c9;
+        }
+        .life_admin {
+            background-color: #ffccbc;
+        }
+        .general_life {
+            background-color: #bbdefb;
+        }
+    </style>
+</head>
+<body>
+    <h1>kAIros Chat Interface</h1>
+    <p>This is a placeholder interface that will be fully implemented in Task 7.</p>
+    
+    <div class="chat-container" id="chat-container">
+        <div class="message system-message">
+            Hello! I'm kAIros, your domain-aware task assistant. You can:
+            <ul>
+                <li>Add tasks with domain tags like: "Submit quarterly report #work @reports [2h] due:friday"</li>
+                <li>Ask what to do with available time: "I have 30 minutes, what should I do?"</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" id="message-input" placeholder="Type your message here...">
+        <button id="send-button">Send</button>
+    </div>
+
+    <script>
+        // This is a placeholder for the chat interface JavaScript
+        // A full implementation will be added in Task 7
+        document.getElementById('send-button').addEventListener('click', function() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                // Add user message to chat
+                addMessage(message, 'user-message');
+                
+                // Simulate system response (in real implementation, this would be an API call)
+                setTimeout(() => {
+                    addMessage("This is a placeholder response. The full chat functionality will be implemented in Task 7.", 'system-message');
+                }, 500);
+                
+                // Clear input
+                messageInput.value = '';
+            }
+        });
+        
+        // Allow sending with Enter key
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('send-button').click();
+            }
+        });
+        
+        function addMessage(text, className) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${className}`;
+            messageElement.textContent = text;
+            chatContainer.appendChild(messageElement);
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

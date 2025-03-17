@@ -23,6 +23,12 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max file size
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
     ALLOWED_EXTENSIONS = {'txt', 'pdf'}
+    
+    # Todoist API settings
+    TODOIST_API_KEY = os.environ.get('TODOIST_API_KEY')
+    TODOIST_CLIENT_ID = os.environ.get('TODOIST_CLIENT_ID')
+    TODOIST_CLIENT_SECRET = os.environ.get('TODOIST_CLIENT_SECRET')
+    TODOIST_WEBHOOK_URL = os.environ.get('TODOIST_WEBHOOK_URL')
 
 class DevelopmentConfig(Config):
     """Development configuration"""
