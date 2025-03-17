@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ../.env.production
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - kairos-net
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: postgres:13-alpine
+    env_file:
+      - ../.env.production
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - kairos-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  nginx:
+    image: nginx:1.21-alpine
+    volumes:
+      - ../nginx/conf.d:/etc/nginx/conf.d
+      - ../ssl_certs:/etc/ssl/certs
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+    networks:
+      - kairos-net
+    restart: always
+
+volumes:
+  postgres_data:
+
+networks:
+  kairos-net:
+    driver: bridge

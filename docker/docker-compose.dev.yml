@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ../.env.development
+    ports:
+      - "5000:5000"
+    volumes:
+      - ..:/app
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=run.py
+      - FLASK_DEBUG=1
+    command: flask run --host=0.0.0.0
+    networks:
+      - kairos-dev-net
+    depends_on:
+      - db-dev
+
+  db-dev:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=kairos_dev
+      - POSTGRES_PASSWORD=kairos_dev_password
+      - POSTGRES_DB=kairos_dev
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    networks:
+      - kairos-dev-net
+
+volumes:
+  postgres_data_dev:
+
+networks:
+  kairos-dev-net:
+    driver: bridge
