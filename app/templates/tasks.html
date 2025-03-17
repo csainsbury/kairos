@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks - kAIros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1, h2, h3 {
+            color: #333;
+        }
+        
+        h1 {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .main-content {
+            flex: 3;
+        }
+        
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .filters {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        button:hover {
+            background-color: #3367d6;
+        }
+        
+        .button-secondary {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+        
+        .button-secondary:hover {
+            background-color: #e1e1e1;
+        }
+        
+        .button-success {
+            background-color: #34a853;
+        }
+        
+        .button-success:hover {
+            background-color: #2e8f49;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .task-priority {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            border-radius: 50%;
+            background-color: #f1f1f1;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .priority-high {
+            background-color: #ea4335;
+            color: white;
+        }
+        
+        .priority-medium {
+            background-color: #fbbc05;
+            color: white;
+        }
+        
+        .priority-low {
+            background-color: #34a853;
+            color: white;
+        }
+        
+        .domain-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: white;
+            background-color: #9e9e9e;
+            margin-right: 5px;
+        }
+        
+        .domain-work {
+            background-color: #4285f4;
+        }
+        
+        .domain-life-admin {
+            background-color: #ea4335;
+        }
+        
+        .domain-general-life {
+            background-color: #34a853;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4285f4;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #ea4335;
+            font-weight: bold;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .next-task {
+            border-left: 4px solid #34a853;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f0f8f0;
+        }
+        
+        .task-summary {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f2f2f2;
+            border-radius: 4px;
+        }
+        
+        .domain-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .domain-card {
+            flex: 1;
+            padding: 15px;
+            margin: 0 5px;
+            border-radius: 5px;
+            color: white;
+        }
+        
+        .domain-card h3 {
+            margin-top: 0;
+            color: white;
+        }
+        
+        .work-card {
+            background-color: #4285f4;
+        }
+        
+        .life-admin-card {
+            background-color: #ea4335;
+        }
+        
+        .general-life-card {
+            background-color: #34a853;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>kAIros Task Management</h1>
+    
+    <nav style="margin-bottom: 20px;">
+        <a href="/" style="margin-right: 15px; color: #4285f4; text-decoration: none;">Projects</a>
+        <a href="/tasks" style="margin-right: 15px; font-weight: bold; color: #4285f4; text-decoration: none;">Tasks</a>
+        <a href="/calendar" style="margin-right: 15px; color: #4285f4; text-decoration: none;">Calendar</a>
+        <a href="/reports" style="margin-right: 15px; color: #4285f4; text-decoration: none;">Reports</a>
+        <a href="/chat" style="margin-right: 15px; color: #4285f4; text-decoration: none;">Chat</a>
+    </nav>
+    
+    <div class="domain-summary">
+        <div class="domain-card work-card">
+            <h3>Work</h3>
+            <div id="work-count">0 tasks</div>
+            <div id="work-time">0 minutes total</div>
+        </div>
+        <div class="domain-card life-admin-card">
+            <h3>Life Admin</h3>
+            <div id="life-admin-count">0 tasks</div>
+            <div id="life-admin-time">0 minutes total</div>
+        </div>
+        <div class="domain-card general-life-card">
+            <h3>General Life</h3>
+            <div id="general-life-count">0 tasks</div>
+            <div id="general-life-time">0 minutes total</div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="card">
+                <h2>Next Task</h2>
+                <div class="next-task" id="next-task">
+                    <p>Loading your next recommended task...</p>
+                </div>
+                
+                <div class="filters">
+                    <label for="available-time">Available Time (minutes):</label>
+                    <input type="number" id="available-time" min="5" max="1440" value="60">
+                    
+                    <label for="domain-filter">Domain:</label>
+                    <select id="domain-filter">
+                        <option value="">All Domains</option>
+                        <option value="work">Work</option>
+                        <option value="life_admin">Life Admin</option>
+                        <option value="general_life">General Life</option>
+                    </select>
+                    
+                    <button id="get-next-task" class="button-success">Get Next Task</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Today's Plan</h2>
+                <div class="filters">
+                    <label for="working-hours">Working Hours:</label>
+                    <input type="number" id="working-hours" min="1" max="24" step="0.5" value="8">
+                    
+                    <label for="domain-focus">Focus Domain:</label>
+                    <select id="domain-focus">
+                        <option value="">Balanced</option>
+                        <option value="work">Work</option>
+                        <option value="life_admin">Life Admin</option>
+                        <option value="general_life">General Life</option>
+                    </select>
+                    
+                    <button id="generate-today-plan">Generate Today's Plan</button>
+                </div>
+                
+                <div class="task-summary" id="today-summary">
+                    <p>Generate a plan to see a summary of your day.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="card">
+                <h2>Ranked Tasks</h2>
+                
+                <div class="filters">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label for="task-domain">Filter by Domain:</label>
+                            <select id="task-domain">
+                                <option value="">All Domains</option>
+                                <option value="work">Work</option>
+                                <option value="life_admin">Life Admin</option>
+                                <option value="general_life">General Life</option>
+                            </select>
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            <label for="task-time">Available Time (minutes):</label>
+                            <input type="number" id="task-time" min="5" max="1440" value="480">
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                        <button id="rank-tasks">Rank Tasks</button>
+                        <button id="show-all-tasks" class="button-secondary">Show All Tasks</button>
+                    </div>
+                </div>
+                
+                <div class="loading" id="tasks-loading">
+                    <div class="spinner"></div>
+                    <p>Ranking tasks...</p>
+                </div>
+                
+                <div class="error" id="tasks-error"></div>
+                
+                <div id="ranked-tasks-container">
+                    <table id="ranked-tasks-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">Rank</th>
+                                <th>Task</th>
+                                <th style="width: 100px;">Domain</th>
+                                <th style="width: 120px;">Duration</th>
+                                <th style="width: 120px;">Deadline</th>
+                                <th style="width: 100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranked-tasks">
+                            <tr>
+                                <td colspan="6" style="text-align: center;">No tasks to display. Click "Rank Tasks" to see task recommendations.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load domain summary on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDomainSummary();
+            getNextTask();
+        });
+        
+        // Load domain summary
+        function loadDomainSummary() {
+            fetch('/api/tasks-by-domain')
+                .then(response => response.json())
+                .then(data => {
+                    // Update domain cards
+                    document.getElementById('work-count').textContent = 
+                        `${data.domains.work.count} task${data.domains.work.count !== 1 ? 's' : ''}`;
+                    document.getElementById('work-time').textContent = 
+                        `${formatMinutes(data.domains.work.total_minutes)}`;
+                    
+                    document.getElementById('life-admin-count').textContent = 
+                        `${data.domains.life_admin.count} task${data.domains.life_admin.count !== 1 ? 's' : ''}`;
+                    document.getElementById('life-admin-time').textContent = 
+                        `${formatMinutes(data.domains.life_admin.total_minutes)}`;
+                    
+                    document.getElementById('general-life-count').textContent = 
+                        `${data.domains.general_life.count} task${data.domains.general_life.count !== 1 ? 's' : ''}`;
+                    document.getElementById('general-life-time').textContent = 
+                        `${formatMinutes(data.domains.general_life.total_minutes)}`;
+                })
+                .catch(error => {
+                    console.error('Error loading domain summary:', error);
+                });
+        }
+        
+        // Get next task recommendation
+        function getNextTask() {
+            const availableTime = document.getElementById('available-time').value;
+            const domain = document.getElementById('domain-filter').value;
+            
+            // Build query params
+            let params = [];
+            if (availableTime) params.push(`available_time=${availableTime}`);
+            if (domain) params.push(`domain=${domain}`);
+            
+            const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+            
+            fetch(`/api/next-task${queryString}`)
+                .then(response => response.json())
+                .then(data => {
+                    const nextTaskDiv = document.getElementById('next-task');
+                    
+                    if (data.task) {
+                        const task = data.task;
+                        let deadlineText = 'No deadline';
+                        
+                        if (task.deadline) {
+                            const deadline = new Date(task.deadline);
+                            deadlineText = deadline.toLocaleDateString();
+                        }
+                        
+                        nextTaskDiv.innerHTML = `
+                            <h3>${task.description}</h3>
+                            <p><span class="domain-tag domain-${task.domain}">${formatDomain(task.domain)}</span></p>
+                            <p>Duration: ${task.estimated_duration} minutes</p>
+                            <p>Deadline: ${deadlineText}</p>
+                            <button class="button-success" onclick="markTaskCompleted(${task.id})">Mark Completed</button>
+                        `;
+                    } else {
+                        nextTaskDiv.innerHTML = `
+                            <p>No tasks available that match your criteria.</p>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting next task:', error);
+                    document.getElementById('next-task').innerHTML = `
+                        <p>Error loading next task recommendation.</p>
+                    `;
+                });
+        }
+        
+        // Rank tasks
+        function rankTasks() {
+            const domain = document.getElementById('task-domain').value;
+            const availableTime = document.getElementById('task-time').value;
+            
+            // Show loading spinner
+            document.getElementById('tasks-loading').style.display = 'block';
+            document.getElementById('tasks-error').style.display = 'none';
+            
+            // Build query params
+            let params = [];
+            if (domain) params.push(`domain=${domain}`);
+            if (availableTime) params.push(`available_time=${availableTime}`);
+            
+            const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+            
+            fetch(`/api/ranked-tasks${queryString}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('tasks-loading').style.display = 'none';
+                    displayRankedTasks(data.tasks, data.total_duration);
+                })
+                .catch(error => {
+                    document.getElementById('tasks-loading').style.display = 'none';
+                    document.getElementById('tasks-error').style.display = 'block';
+                    document.getElementById('tasks-error').textContent = 'Error loading ranked tasks: ' + error.message;
+                });
+        }
+        
+        // Display ranked tasks
+        function displayRankedTasks(tasks, totalDuration) {
+            const tbody = document.getElementById('ranked-tasks');
+            tbody.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No tasks available</td></tr>`;
+                return;
+            }
+            
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                
+                // Format deadline
+                let deadlineText = 'None';
+                if (task.deadline) {
+                    const deadline = new Date(task.deadline);
+                    deadlineText = deadline.toLocaleDateString();
+                }
+                
+                // Create priority indicator
+                let priorityClass = 'priority-medium';
+                if (task.rank <= 3) {
+                    priorityClass = 'priority-high';
+                } else if (task.rank > 5) {
+                    priorityClass = 'priority-low';
+                }
+                
+                row.innerHTML = `
+                    <td><span class="task-priority ${priorityClass}">${task.rank}</span></td>
+                    <td>${task.description}</td>
+                    <td><span class="domain-tag domain-${task.domain}">${formatDomain(task.domain)}</span></td>
+                    <td>${task.estimated_duration} minutes</td>
+                    <td>${deadlineText}</td>
+                    <td>
+                        <button class="button-success" onclick="markTaskCompleted(${task.id})">Complete</button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Add a summary row
+            const summaryRow = document.createElement('tr');
+            summaryRow.innerHTML = `
+                <td colspan="3" style="text-align: right;"><strong>Total Duration:</strong></td>
+                <td colspan="3"><strong>${totalDuration} minutes (${formatMinutes(totalDuration)})</strong></td>
+            `;
+            tbody.appendChild(summaryRow);
+        }
+        
+        // Show all tasks
+        function showAllTasks() {
+            fetch('/api/tasks')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('ranked-tasks');
+                    tbody.innerHTML = '';
+                    
+                    if (data.tasks.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No tasks available</td></tr>`;
+                        return;
+                    }
+                    
+                    data.tasks.forEach(task => {
+                        const row = document.createElement('tr');
+                        
+                        // Format deadline
+                        let deadlineText = 'None';
+                        if (task.deadline) {
+                            const deadline = new Date(task.deadline);
+                            deadlineText = deadline.toLocaleDateString();
+                        }
+                        
+                        row.innerHTML = `
+                            <td>-</td>
+                            <td>${task.description}</td>
+                            <td><span class="domain-tag domain-${task.domain}">${formatDomain(task.domain)}</span></td>
+                            <td>${task.estimated_duration} minutes</td>
+                            <td>${deadlineText}</td>
+                            <td>
+                                <button class="button-success" onclick="markTaskCompleted(${task.id})">Complete</button>
+                            </td>
+                        `;
+                        
+                        tbody.appendChild(row);
+                    });
+                    
+                    // Add a summary row
+                    const totalDuration = data.tasks.reduce((total, task) => total + task.estimated_duration, 0);
+                    const summaryRow = document.createElement('tr');
+                    summaryRow.innerHTML = `
+                        <td colspan="3" style="text-align: right;"><strong>Total Duration:</strong></td>
+                        <td colspan="3"><strong>${totalDuration} minutes (${formatMinutes(totalDuration)})</strong></td>
+                    `;
+                    tbody.appendChild(summaryRow);
+                })
+                .catch(error => {
+                    document.getElementById('tasks-error').style.display = 'block';
+                    document.getElementById('tasks-error').textContent = 'Error loading tasks: ' + error.message;
+                });
+        }
+        
+        // Generate today's plan
+        function generateTodayPlan() {
+            const workingHours = document.getElementById('working-hours').value;
+            const domainFocus = document.getElementById('domain-focus').value;
+            
+            // Build query params
+            let params = [];
+            if (workingHours) params.push(`working_hours=${workingHours}`);
+            if (domainFocus) params.push(`domain_focus=${domainFocus}`);
+            
+            const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+            
+            fetch(`/api/tasks-for-today${queryString}`)
+                .then(response => response.json())
+                .then(data => {
+                    const summary = document.getElementById('today-summary');
+                    
+                    // Create summary content
+                    let summaryHTML = `
+                        <h3>Today's Plan (${new Date().toLocaleDateString()})</h3>
+                        <p>Working time: ${data.available_minutes} minutes (${formatMinutes(data.available_minutes)})</p>
+                        <p>Scheduled: ${data.scheduled_minutes} minutes (${formatMinutes(data.scheduled_minutes)})</p>
+                        <p>Remaining: ${data.remaining_minutes} minutes (${formatMinutes(data.remaining_minutes)})</p>
+                    `;
+                    
+                    if (data.tasks.length > 0) {
+                        summaryHTML += '<ul>';
+                        data.tasks.forEach(task => {
+                            summaryHTML += `<li><strong>${task.description}</strong> - ${task.estimated_duration} minutes</li>`;
+                        });
+                        summaryHTML += '</ul>';
+                    } else {
+                        summaryHTML += '<p>No tasks scheduled for today.</p>';
+                    }
+                    
+                    summary.innerHTML = summaryHTML;
+                })
+                .catch(error => {
+                    console.error('Error generating today\'s plan:', error);
+                    document.getElementById('today-summary').innerHTML = `
+                        <p>Error generating today's plan: ${error.message}</p>
+                    `;
+                });
+        }
+        
+        // Mark task as completed
+        function markTaskCompleted(taskId) {
+            if (confirm('Do you want to mark this task as completed?')) {
+                // Show loading spinner or some indicator
+                const loadingElement = document.createElement('div');
+                loadingElement.className = 'spinner';
+                loadingElement.style.width = '20px';
+                loadingElement.style.height = '20px';
+                loadingElement.id = 'completion-spinner';
+                
+                // Find the button that was clicked and append spinner
+                const button = event.target;
+                button.disabled = true;
+                button.insertAdjacentElement('afterend', loadingElement);
+                
+                // Call API to mark task as completed
+                fetch(`/api/tasks/${taskId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        actual_duration: prompt('Enter actual time taken (minutes):', '')
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to mark task as completed');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Remove spinner and update UI
+                    const spinner = document.getElementById('completion-spinner');
+                    if (spinner) spinner.remove();
+                    button.disabled = false;
+                    
+                    // Show success message
+                    alert('Task marked as completed!');
+                    
+                    // Refresh data
+                    getNextTask();
+                    loadDomainSummary();
+                    
+                    // If we're in a ranked list, refresh that too
+                    if (document.getElementById('ranked-tasks').children.length > 0) {
+                        rankTasks();
+                    } else {
+                        showAllTasks();
+                    }
+                })
+                .catch(error => {
+                    // Remove spinner and update UI
+                    const spinner = document.getElementById('completion-spinner');
+                    if (spinner) spinner.remove();
+                    button.disabled = false;
+                    
+                    // Show error message
+                    alert('Error: ' + error.message);
+                    console.error('Error completing task:', error);
+                });
+            }
+        }
+        
+        // Format domain display
+        function formatDomain(domain) {
+            switch(domain) {
+                case 'work': return 'Work';
+                case 'life_admin': return 'Life Admin';
+                case 'general_life': return 'General Life';
+                default: return domain;
+            }
+        }
+        
+        // Format minutes as hours and minutes
+        function formatMinutes(minutes) {
+            if (minutes < 60) {
+                return `${minutes} min`;
+            }
+            
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            
+            if (mins === 0) {
+                return `${hours} hr`;
+            }
+            
+            return `${hours} hr ${mins} min`;
+        }
+        
+        // Event listeners
+        document.getElementById('get-next-task').addEventListener('click', getNextTask);
+        document.getElementById('rank-tasks').addEventListener('click', rankTasks);
+        document.getElementById('show-all-tasks').addEventListener('click', showAllTasks);
+        document.getElementById('generate-today-plan').addEventListener('click', generateTodayPlan);
+    </script>
+</body>
+</html>

@@ -5,146 +5,1564 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <style>
+        :root {
+            --primary-color: #4285f4;
+            --primary-dark: #3367d6;
+            --success-color: #34a853;
+            --warning-color: #fbbc05;
+            --error-color: #ea4335;
+            --light-bg: #f9f9f9;
+            --border-color: #ddd;
+            --text-color: #333;
+            --text-secondary: #666;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             margin: 0;
-            padding: 20px;
-            max-width: 800px;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 1000px;
             margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            height: 100vh;
         }
-        h1 {
-            color: #333;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
-        }
-        .chat-container {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            height: 400px;
+        
+        .sidebar {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            height: calc(100vh - 40px);
             overflow-y: auto;
-            margin-bottom: 10px;
-            background-color: #f9f9f9;
         }
+        
+        .main {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+        }
+        
+        /* Media Queries for Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+                padding: 10px;
+                gap: 10px;
+            }
+            
+            .sidebar {
+                height: auto;
+                max-height: 200px;
+                margin-bottom: 10px;
+            }
+            
+            .main {
+                height: calc(100vh - 220px);
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 5px;
+            }
+            
+            .chat-container {
+                padding: 10px;
+            }
+            
+            .message {
+                max-width: 95%;
+                padding: 8px 10px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .input-area {
+                padding: 10px;
+            }
+            
+            #message-input {
+                padding: 8px 10px;
+            }
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin: 0;
+        }
+        
+        .chat-interface {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-container {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
         .message {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 5px;
+            margin-bottom: 15px;
             max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            position: relative;
+            line-height: 1.5;
         }
+        
         .user-message {
-            background-color: #e1f3fb;
-            margin-left: auto;
+            background-color: var(--primary-color);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .system-message {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 5px;
             text-align: right;
         }
-        .system-message {
-            background-color: #f0f0f0;
-        }
+        
         .input-area {
             display: flex;
-            margin-top: 10px;
+            align-items: center;
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            background-color: white;
         }
+        
         #message-input {
             flex-grow: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 5px;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
         }
+        
+        #message-input:focus {
+            border-color: var(--primary-color);
+        }
+        
         button {
-            padding: 8px 15px;
-            background-color: #4285f4;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
+        
         button:hover {
-            background-color: #3367d6;
+            background-color: var(--primary-dark);
         }
-        .task-suggestion {
-            background-color: #e8f5e9;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 5px;
-            cursor: pointer;
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
+        
+        .send-icon {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+        
+        .summary-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+        
+        .summary-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 16px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        
+        .status-label {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 5px;
+            color: white;
+        }
+        
+        .status-pending {
+            background-color: var(--warning-color);
+        }
+        
+        .status-completed {
+            background-color: var(--success-color);
+        }
+        
         .domain-tag {
             display: inline-block;
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-size: 0.8em;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
             margin-right: 5px;
+            color: white;
         }
-        .work {
-            background-color: #c8e6c9;
+        
+        .domain-work {
+            background-color: var(--primary-color);
         }
-        .life_admin {
-            background-color: #ffccbc;
+        
+        .domain-life_admin {
+            background-color: var(--error-color);
         }
-        .general_life {
-            background-color: #bbdefb;
+        
+        .domain-general_life {
+            background-color: var(--success-color);
+        }
+        
+        .suggestion-list {
+            margin-top: 10px;
+        }
+        
+        .suggestion-item {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background-color: var(--light-bg);
+        }
+        
+        .suggestion-rank {
+            background-color: var(--primary-color);
+            color: white;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 8px;
+            font-size: 12px;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            align-self: flex-start;
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            margin: 0 1px;
+            background-color: #9E9E9E;
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+        
+        .typing-indicator span:nth-of-type(1) {
+            animation: bounce 1s infinite;
+        }
+        
+        .typing-indicator span:nth-of-type(2) {
+            animation: bounce 1s 0.2s infinite;
+        }
+        
+        .typing-indicator span:nth-of-type(3) {
+            animation: bounce 1s 0.4s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-checkbox {
+            margin-right: 10px;
+        }
+        
+        .task-content {
+            flex-grow: 1;
+            font-size: 14px;
+        }
+        
+        .task-meta {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+        
+        .task-deadline {
+            margin-right: 10px;
+        }
+        
+        .task-duration {
+            display: flex;
+            align-items: center;
+        }
+        
+        .task-duration svg {
+            width: 12px;
+            height: 12px;
+            margin-right: 3px;
+        }
+        
+        .help-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .help-section h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: var(--primary-color);
+        }
+        
+        .help-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .help-section li {
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .task-form {
+            background-color: var(--light-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+        
+        .form-buttons button {
+            border-radius: 4px;
+            padding: 8px 15px;
+            width: auto;
+            height: auto;
+            margin-left: 10px;
+        }
+        
+        .btn-cancel {
+            background-color: #f1f1f1;
+            color: var(--text-color);
+        }
+        
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>kAIros Chat Interface</h1>
-    <p>This is a placeholder interface that will be fully implemented in Task 7.</p>
-    
-    <div class="chat-container" id="chat-container">
-        <div class="message system-message">
-            Hello! I'm kAIros, your domain-aware task assistant. You can:
-            <ul>
-                <li>Add tasks with domain tags like: "Submit quarterly report #work @reports [2h] due:friday"</li>
-                <li>Ask what to do with available time: "I have 30 minutes, what should I do?"</li>
-            </ul>
+    <div class="container">
+        <div class="sidebar">
+            <header>
+                <h1>kAIros</h1>
+            </header>
+            
+            <div class="summary-card">
+                <h3>Task Summary</h3>
+                <div id="task-summary">
+                    <p>Loading task summary...</p>
+                </div>
+            </div>
+            
+            <div class="summary-card">
+                <h3>Quick Commands</h3>
+                <p>Try these example commands:</p>
+                <ul>
+                    <li><a href="#" onclick="insertCommand('Add task: Complete report #work @project [2h] due:friday')">Add a new task</a></li>
+                    <li><a href="#" onclick="insertCommand('What can I do in 30 minutes?')">Find tasks for available time</a></li>
+                    <li><a href="#" onclick="insertCommand('Show me my work tasks')">View domain tasks</a></li>
+                    <li><a href="#" onclick="insertCommand('What\'s on my calendar today?')">Check calendar</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="chat-interface">
+                <div class="chat-container" id="chat-container">
+                    <div class="system-message">
+                        <p>Hello! I'm kAIros, your domain-aware task assistant. How can I help you today?</p>
+                        <p>You can ask me to:</p>
+                        <ul>
+                            <li>Add tasks: <em>"Add task: Submit quarterly report #work @reports [2h] due:friday"</em></li>
+                            <li>Recommend tasks: <em>"I have 30 minutes, what should I do?"</em></li>
+                            <li>Show your calendar: <em>"What's on my schedule today?"</em></li>
+                            <li>Get domain-specific tasks: <em>"Show me my work tasks"</em></li>
+                        </ul>
+                        <p>Type <em>"help"</em> anytime to see more options.</p>
+                    </div>
+                </div>
+                
+                <div class="input-area">
+                    <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off">
+                    <button id="send-button" title="Send">
+                        <svg class="send-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     
-    <div class="input-area">
-        <input type="text" id="message-input" placeholder="Type your message here...">
-        <button id="send-button">Send</button>
-    </div>
-
     <script>
-        // This is a placeholder for the chat interface JavaScript
-        // A full implementation will be added in Task 7
-        document.getElementById('send-button').addEventListener('click', function() {
+        // Utility Functions
+        function formatDomain(domain) {
+            switch(domain) {
+                case 'work': return 'Work';
+                case 'life_admin': return 'Life Admin';
+                case 'general_life': return 'General Life';
+                default: return domain;
+            }
+        }
+        
+        function formatTime(minutes) {
+            if (minutes < 60) {
+                return `${minutes} min`;
+            }
+            
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            
+            if (mins === 0) {
+                return `${hours} hr`;
+            }
+            
+            return `${hours} hr ${mins} min`;
+        }
+        
+        function getCurrentTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            
+            return `${hours}:${minutes} ${ampm}`;
+        }
+        
+        function scrollToBottom() {
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Chat Functions
+        function addMessage(content, isUser = false) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageElement = document.createElement('div');
+            messageElement.className = isUser ? 'message user-message' : 'message system-message';
+            
+            // Create message content
+            if (typeof content === 'string') {
+                // If content is a simple string
+                messageElement.innerHTML = content;
+            } else {
+                // If content is an HTML element
+                messageElement.appendChild(content);
+            }
+            
+            // Add time
+            const timeElement = document.createElement('div');
+            timeElement.className = 'message-time';
+            timeElement.textContent = getCurrentTime();
+            messageElement.appendChild(timeElement);
+            
+            chatContainer.appendChild(messageElement);
+            scrollToBottom();
+            
+            return messageElement;
+        }
+        
+        function addTypingIndicator() {
+            const chatContainer = document.getElementById('chat-container');
+            const typingElement = document.createElement('div');
+            typingElement.className = 'typing-indicator';
+            typingElement.id = 'typing-indicator';
+            typingElement.innerHTML = '<span></span><span></span><span></span>';
+            
+            chatContainer.appendChild(typingElement);
+            scrollToBottom();
+            
+            return typingElement;
+        }
+        
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        function createTaskSuggestions(suggestions, availableTime) {
+            const container = document.createElement('div');
+            
+            // Add header
+            const header = document.createElement('p');
+            header.innerHTML = `Here are some tasks you could do with <strong>${availableTime} minutes</strong>:`;
+            container.appendChild(header);
+            
+            // Create suggestions list
+            const suggestionList = document.createElement('div');
+            suggestionList.className = 'suggestion-list';
+            
+            suggestions.forEach(suggestion => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.onclick = () => { selectTask(suggestion.id); };
+                
+                // Create content
+                let content = `<span class="suggestion-rank">${suggestion.rank}</span>`;
+                content += `<strong>${suggestion.description}</strong>`;
+                
+                // Add domain tag
+                if (suggestion.domain) {
+                    content += `<span class="domain-tag domain-${suggestion.domain}">${formatDomain(suggestion.domain)}</span>`;
+                }
+                
+                // Add meta
+                content += `<div class="task-meta">`;
+                
+                if (suggestion.deadline) {
+                    content += `<span class="task-deadline">📅 ${suggestion.deadline}</span>`;
+                }
+                
+                content += `<span class="task-duration">⏱️ ${suggestion.estimated_duration} min</span>`;
+                
+                if (suggestion.project) {
+                    content += `<span class="task-project">📁 ${suggestion.project}</span>`;
+                }
+                
+                content += `</div>`;
+                
+                item.innerHTML = content;
+                suggestionList.appendChild(item);
+            });
+            
+            container.appendChild(suggestionList);
+            return container;
+        }
+        
+        function createHelpContent(helpSections) {
+            const container = document.createElement('div');
+            
+            helpSections.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'help-section';
+                
+                const title = document.createElement('h4');
+                title.textContent = section.title;
+                sectionDiv.appendChild(title);
+                
+                const list = document.createElement('ul');
+                section.items.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = item;
+                    list.appendChild(listItem);
+                });
+                
+                sectionDiv.appendChild(list);
+                container.appendChild(sectionDiv);
+            });
+            
+            return container;
+        }
+        
+        function createTaskForm(missingFields, parsedData) {
+            const container = document.createElement('div');
+            container.innerHTML = '<p>I need more information to add this task. Please fill in the missing fields:</p>';
+            
+            const form = document.createElement('div');
+            form.className = 'task-form';
+            form.id = 'task-form';
+            
+            // Add description field
+            const descGroup = document.createElement('div');
+            descGroup.className = 'form-group';
+            descGroup.innerHTML = `
+                <label for="task-description">Task Description:</label>
+                <input type="text" id="task-description" value="${parsedData.description || ''}">
+            `;
+            form.appendChild(descGroup);
+            
+            // Add domain field if missing
+            if (missingFields.includes('domain')) {
+                const domainGroup = document.createElement('div');
+                domainGroup.className = 'form-group';
+                domainGroup.innerHTML = `
+                    <label for="task-domain">Domain:</label>
+                    <select id="task-domain">
+                        <option value="work" ${parsedData.domain === 'work' ? 'selected' : ''}>Work</option>
+                        <option value="life_admin" ${parsedData.domain === 'life_admin' ? 'selected' : ''}>Life Admin</option>
+                        <option value="general_life" ${parsedData.domain === 'general_life' ? 'selected' : ''}>General Life</option>
+                    </select>
+                `;
+                form.appendChild(domainGroup);
+            } else {
+                // Add hidden field
+                form.innerHTML += `<input type="hidden" id="task-domain" value="${parsedData.domain || 'work'}">`;
+            }
+            
+            // Add estimated duration field if missing
+            if (missingFields.includes('estimated_duration')) {
+                const durationGroup = document.createElement('div');
+                durationGroup.className = 'form-group';
+                durationGroup.innerHTML = `
+                    <label for="task-duration">Estimated Duration (minutes):</label>
+                    <input type="number" id="task-duration" value="${parsedData.estimated_duration || ''}">
+                `;
+                form.appendChild(durationGroup);
+            } else {
+                // Add hidden field
+                form.innerHTML += `<input type="hidden" id="task-duration" value="${parsedData.estimated_duration || ''}">`;
+            }
+            
+            // Add project field (optional)
+            const projectGroup = document.createElement('div');
+            projectGroup.className = 'form-group';
+            projectGroup.innerHTML = `
+                <label for="task-project">Project (optional):</label>
+                <input type="text" id="task-project" value="${parsedData.project || ''}">
+            `;
+            form.appendChild(projectGroup);
+            
+            // Add deadline field (optional)
+            const deadlineGroup = document.createElement('div');
+            deadlineGroup.className = 'form-group';
+            deadlineGroup.innerHTML = `
+                <label for="task-deadline">Deadline (optional):</label>
+                <input type="date" id="task-deadline" value="${parsedData.deadline ? parsedData.deadline.split('T')[0] : ''}">
+            `;
+            form.appendChild(deadlineGroup);
+            
+            // Add buttons
+            const buttonGroup = document.createElement('div');
+            buttonGroup.className = 'form-buttons';
+            buttonGroup.innerHTML = `
+                <button type="button" class="btn-cancel" onclick="cancelTaskForm()">Cancel</button>
+                <button type="button" onclick="submitTaskForm()">Add Task</button>
+            `;
+            form.appendChild(buttonGroup);
+            
+            container.appendChild(form);
+            return container;
+        }
+        
+        function createCalendarView(summary) {
+            const container = document.createElement('div');
+            
+            // Add header with date information
+            const startDate = new Date(summary.start_date);
+            const endDate = new Date(summary.end_date);
+            
+            let dateStr;
+            if (startDate.toDateString() === endDate.toDateString()) {
+                // Same day
+                dateStr = startDate.toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } else {
+                // Date range
+                dateStr = `${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`;
+            }
+            
+            container.innerHTML = `<p>Calendar for <strong>${dateStr}</strong>:</p>`;
+            
+            // Add event count and time info
+            container.innerHTML += `<p>You have <strong>${summary.event_count} events</strong> scheduled.`;
+            
+            if (summary.event_count > 0) {
+                container.innerHTML += ` Total time: <strong>${formatTime(summary.total_minutes)}</strong></p>`;
+                
+                // Add events list
+                const eventsList = document.createElement('ul');
+                eventsList.style.listStyleType = 'none';
+                eventsList.style.padding = '0';
+                
+                summary.events.forEach(event => {
+                    const eventItem = document.createElement('li');
+                    eventItem.style.padding = '8px';
+                    eventItem.style.borderBottom = '1px solid #eee';
+                    eventItem.style.marginBottom = '5px';
+                    
+                    // Format times
+                    const startTime = new Date(event.start);
+                    const endTime = new Date(event.end);
+                    const timeStr = `${startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                    
+                    eventItem.innerHTML = `
+                        <div style="font-weight: bold;">${event.title}</div>
+                        <div style="color: #666; font-size: 0.9em;">${timeStr}</div>
+                    `;
+                    
+                    // Add location if available
+                    if (event.location) {
+                        eventItem.innerHTML += `<div style="color: #666; font-size: 0.9em;">📍 ${event.location}</div>`;
+                    }
+                    
+                    eventsList.appendChild(eventItem);
+                });
+                
+                container.appendChild(eventsList);
+                
+                // Add available time info
+                container.innerHTML += `<p>Available time: <strong>${formatTime(summary.available_minutes)}</strong></p>`;
+            } else {
+                container.innerHTML += ` You have no events scheduled.</p>`;
+            }
+            
+            return container;
+        }
+        
+        function createDomainTasksView(tasks, domain, count) {
+            const container = document.createElement('div');
+            
+            // Add header
+            container.innerHTML = `<p>You have <strong>${count} ${formatDomain(domain)} tasks</strong>:</p>`;
+            
+            if (count > 0) {
+                // Create task list
+                const taskList = document.createElement('ul');
+                taskList.className = 'task-list';
+                
+                tasks.forEach(task => {
+                    const taskItem = document.createElement('li');
+                    taskItem.className = 'task-item';
+                    
+                    let content = `<input type="checkbox" class="task-checkbox" onchange="completeTask(${task.id})">`;
+                    content += `<div class="task-content">`;
+                    content += `<div>${task.description}</div>`;
+                    
+                    // Add meta information
+                    content += `<div class="task-meta">`;
+                    
+                    if (task.deadline) {
+                        content += `<span class="task-deadline">📅 ${task.deadline}</span>`;
+                    }
+                    
+                    content += `<span class="task-duration">⏱️ ${task.estimated_duration} min</span>`;
+                    
+                    if (task.project) {
+                        content += `<span class="task-project">📁 ${task.project}</span>`;
+                    }
+                    
+                    content += `</div></div>`;
+                    
+                    taskItem.innerHTML = content;
+                    taskList.appendChild(taskItem);
+                });
+                
+                container.appendChild(taskList);
+            } else {
+                container.innerHTML += `<p>You don't have any ${formatDomain(domain)} tasks.</p>`;
+            }
+            
+            return container;
+        }
+        
+        function createProjectView(summary) {
+            const container = document.createElement('div');
+            
+            if (summary.projects) {
+                // List of projects
+                container.innerHTML = `<p>You have <strong>${summary.total_count} projects</strong>:</p>`;
+                
+                const projectList = document.createElement('ul');
+                projectList.style.padding = '0';
+                projectList.style.listStyleType = 'none';
+                
+                summary.projects.forEach(project => {
+                    const projectItem = document.createElement('li');
+                    projectItem.style.padding = '10px';
+                    projectItem.style.marginBottom = '8px';
+                    projectItem.style.borderRadius = '5px';
+                    projectItem.style.backgroundColor = '#f2f2f2';
+                    
+                    // Calculate completion percentage
+                    const completionPercent = Math.round(project.completion_rate * 100);
+                    
+                    projectItem.innerHTML = `
+                        <div style="font-weight: bold; margin-bottom: 5px;">${project.name}</div>
+                        <div>
+                            <span class="domain-tag domain-${project.domain}">${formatDomain(project.domain)}</span>
+                            <span>${project.pending_count} pending, ${project.completed_count} completed</span>
+                        </div>
+                        <div style="margin-top: 8px; background-color: #ddd; height: 8px; border-radius: 4px;">
+                            <div style="background-color: var(--success-color); height: 8px; width: ${completionPercent}%; border-radius: 4px;"></div>
+                        </div>
+                        <div style="font-size: 12px; text-align: right; color: #666;">${completionPercent}% complete</div>
+                    `;
+                    
+                    projectList.appendChild(projectItem);
+                });
+                
+                container.appendChild(projectList);
+            } else if (summary.project) {
+                // Single project details
+                const project = summary.project;
+                
+                container.innerHTML = `
+                    <div style="margin-bottom: 15px;">
+                        <h3 style="margin: 0;">${project.name}</h3>
+                        <span class="domain-tag domain-${project.domain}">${formatDomain(project.domain)}</span>
+                    </div>
+                `;
+                
+                // Progress bar
+                const completionPercent = Math.round(project.completion_rate * 100);
+                container.innerHTML += `
+                    <div style="margin: 15px 0;">
+                        <div style="margin-bottom: 5px;">
+                            <span style="font-weight: bold;">${completionPercent}% complete</span> 
+                            (${project.completed_count} of ${project.pending_count + project.completed_count} tasks)
+                        </div>
+                        <div style="background-color: #ddd; height: 10px; border-radius: 5px;">
+                            <div style="background-color: var(--success-color); height: 10px; width: ${completionPercent}%; border-radius: 5px;"></div>
+                        </div>
+                    </div>
+                `;
+                
+                // Project documents with summaries
+                if (project.documents && project.documents.length > 0) {
+                    container.innerHTML += `<h4 style="margin-bottom: 10px;">Project Documents (${project.documents.length})</h4>`;
+                    
+                    const docsContainer = document.createElement('div');
+                    docsContainer.className = 'project-documents';
+                    docsContainer.style.marginBottom = '20px';
+                    
+                    project.documents.forEach(doc => {
+                        const docItem = document.createElement('div');
+                        docItem.style.backgroundColor = '#f5f9ff';
+                        docItem.style.padding = '10px';
+                        docItem.style.borderRadius = '5px';
+                        docItem.style.marginBottom = '10px';
+                        
+                        const fileIcon = doc.file_type.includes('pdf') ? '📄' : '📝';
+                        
+                        let docContent = `
+                            <div style="font-weight: bold; margin-bottom: 5px;">${fileIcon} ${doc.filename}</div>
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Uploaded: ${doc.created_at}</div>
+                        `;
+                        
+                        if (doc.summary) {
+                            docContent += `
+                                <div style="margin-top: 8px; padding: 8px; background-color: white; border-radius: 4px; font-size: 13px;">
+                                    <strong>Summary:</strong> ${doc.summary}
+                                </div>
+                            `;
+                        }
+                        
+                        docItem.innerHTML = docContent;
+                        docsContainer.appendChild(docItem);
+                    });
+                    
+                    container.appendChild(docsContainer);
+                }
+                
+                // Pending tasks
+                if (project.pending_tasks.length > 0) {
+                    container.innerHTML += `<h4 style="margin-bottom: 10px;">Pending Tasks (${formatTime(project.pending_minutes)})</h4>`;
+                    
+                    const pendingList = document.createElement('ul');
+                    pendingList.className = 'task-list';
+                    
+                    project.pending_tasks.forEach(task => {
+                        const taskItem = document.createElement('li');
+                        taskItem.className = 'task-item';
+                        
+                        let content = `<input type="checkbox" class="task-checkbox" onchange="completeTask(${task.id})">`;
+                        content += `<div class="task-content">`;
+                        content += `<div>${task.description}</div>`;
+                        
+                        // Add meta information
+                        content += `<div class="task-meta">`;
+                        
+                        if (task.deadline) {
+                            content += `<span class="task-deadline">📅 ${task.deadline}</span>`;
+                        }
+                        
+                        content += `<span class="task-duration">⏱️ ${task.estimated_duration} min</span>`;
+                        content += `</div></div>`;
+                        
+                        taskItem.innerHTML = content;
+                        pendingList.appendChild(taskItem);
+                    });
+                    
+                    container.appendChild(pendingList);
+                }
+                
+                // Completed tasks
+                if (project.completed_tasks.length > 0) {
+                    container.innerHTML += `<h4 style="margin: 15px 0 10px 0;">Completed Tasks (${formatTime(project.completed_minutes)})</h4>`;
+                    
+                    const completedList = document.createElement('ul');
+                    completedList.className = 'task-list';
+                    
+                    project.completed_tasks.forEach(task => {
+                        const taskItem = document.createElement('li');
+                        taskItem.className = 'task-item';
+                        taskItem.style.color = '#666';
+                        
+                        taskItem.innerHTML = `
+                            <input type="checkbox" class="task-checkbox" checked disabled>
+                            <div class="task-content">
+                                <div><s>${task.description}</s></div>
+                                <div class="task-meta">
+                                    <span class="task-duration">⏱️ ${task.estimated_duration} min</span>
+                                    ${task.completed_at ? `<span>✓ ${task.completed_at}</span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        
+                        completedList.appendChild(taskItem);
+                    });
+                    
+                    container.appendChild(completedList);
+                }
+            } else {
+                // General project info
+                container.innerHTML = `
+                    <p>Project summary:</p>
+                    <ul>
+                        <li>${summary.with_project_count} tasks associated with projects</li>
+                        <li>${summary.no_project_count} tasks without a project</li>
+                    </ul>
+                    <p>Use "Show me all projects" to see detailed project information.</p>
+                `;
+            }
+            
+            return container;
+        }
+        
+        function createDocumentView(summary) {
+            const container = document.createElement('div');
+            
+            container.innerHTML = `<p>You have <strong>${summary.total_count} documents</strong> across ${summary.by_project.length} projects:</p>`;
+            
+            if (summary.total_count > 0) {
+                const projectList = document.createElement('div');
+                
+                summary.by_project.forEach(projectDocs => {
+                    const projectDiv = document.createElement('div');
+                    projectDiv.style.marginBottom = '15px';
+                    projectDiv.style.backgroundColor = '#f2f2f2';
+                    projectDiv.style.padding = '10px';
+                    projectDiv.style.borderRadius = '5px';
+                    
+                    projectDiv.innerHTML = `
+                        <h4 style="margin-top: 0;">${projectDocs.project_name} (${projectDocs.document_count} documents)</h4>
+                        <ul style="margin-bottom: 0;">
+                    `;
+                    
+                    projectDocs.documents.forEach(doc => {
+                        const fileTypeIcon = doc.file_type.includes('pdf') ? '📄' : '📝';
+                        const summaryIcon = doc.has_summary ? ' 📋' : '';
+                        
+                        projectDiv.innerHTML += `
+                            <li>${fileTypeIcon} ${doc.filename}${summaryIcon} <small style="color: #666;">(${doc.created_at})</small></li>
+                        `;
+                    });
+                    
+                    projectDiv.innerHTML += `</ul>`;
+                    projectList.appendChild(projectDiv);
+                });
+                
+                container.appendChild(projectList);
+            } else {
+                container.innerHTML += `<p>You haven't uploaded any documents yet.</p>`;
+            }
+            
+            return container;
+        }
+        
+        function createTaskOverview(data) {
+            const container = document.createElement('div');
+            
+            // Basic stats
+            container.innerHTML = `
+                <p>Task Overview:</p>
+                <ul>
+                    <li><strong>${data.pending_count}</strong> tasks pending</li>
+                    <li><strong>${data.completed_count}</strong> tasks completed</li>
+                    <li><strong>${Math.round(data.completion_rate * 100)}%</strong> completion rate</li>
+                </ul>
+            `;
+            
+            // Upcoming deadlines
+            if (data.upcoming_deadlines && data.upcoming_deadlines.length > 0) {
+                container.innerHTML += `<p>Upcoming deadlines:</p>`;
+                
+                const deadlineList = document.createElement('ul');
+                deadlineList.className = 'task-list';
+                
+                data.upcoming_deadlines.forEach(task => {
+                    const taskItem = document.createElement('li');
+                    taskItem.className = 'task-item';
+                    
+                    taskItem.innerHTML = `
+                        <input type="checkbox" class="task-checkbox" onchange="completeTask(${task.id})">
+                        <div class="task-content">
+                            <div>${task.description}</div>
+                            <div class="task-meta">
+                                <span class="task-deadline" style="color: var(--error-color); font-weight: bold;">📅 ${task.deadline}</span>
+                                <span class="task-duration">⏱️ ${task.estimated_duration} min</span>
+                                <span class="domain-tag domain-${task.domain}">${formatDomain(task.domain)}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    deadlineList.appendChild(taskItem);
+                });
+                
+                container.appendChild(deadlineList);
+            }
+            
+            // Next recommended task
+            if (data.next_task) {
+                container.innerHTML += `<p>Recommended next task:</p>`;
+                
+                const nextTask = document.createElement('div');
+                nextTask.className = 'suggestion-item';
+                nextTask.onclick = () => { selectTask(data.next_task.id); };
+                
+                let content = `<strong>${data.next_task.description}</strong>`;
+                
+                // Add domain tag
+                if (data.next_task.domain) {
+                    content += `<span class="domain-tag domain-${data.next_task.domain}">${formatDomain(data.next_task.domain)}</span>`;
+                }
+                
+                // Add meta
+                content += `<div class="task-meta">`;
+                
+                if (data.next_task.deadline) {
+                    content += `<span class="task-deadline">📅 ${data.next_task.deadline}</span>`;
+                }
+                
+                content += `<span class="task-duration">⏱️ ${data.next_task.estimated_duration} min</span>`;
+                
+                if (data.next_task.project) {
+                    content += `<span class="task-project">📁 ${data.next_task.project}</span>`;
+                }
+                
+                content += `</div>`;
+                
+                nextTask.innerHTML = content;
+                container.appendChild(nextTask);
+            }
+            
+            return container;
+        }
+        
+        function createGreetingView(data) {
+            const container = document.createElement('div');
+            
+            // Welcome message with task count
+            container.innerHTML = `<p>Hello! You have <strong>${data.domain_summary.total_count} tasks</strong> pending across all domains.</p>`;
+            
+            // Domain breakdown
+            const domainSummary = data.domain_summary;
+            
+            if (domainSummary.total_count > 0) {
+                container.innerHTML += `<p>Tasks by domain:</p>`;
+                
+                // Create domain summary
+                const domainDiv = document.createElement('div');
+                domainDiv.style.display = 'flex';
+                domainDiv.style.gap = '10px';
+                domainDiv.style.marginBottom = '15px';
+                
+                // Work domain
+                const workDiv = document.createElement('div');
+                workDiv.style.flex = '1';
+                workDiv.style.backgroundColor = 'var(--primary-color)';
+                workDiv.style.color = 'white';
+                workDiv.style.padding = '10px';
+                workDiv.style.borderRadius = '5px';
+                workDiv.innerHTML = `
+                    <div style="font-weight: bold;">Work</div>
+                    <div>${domainSummary.work.count} tasks</div>
+                    <div>${formatTime(domainSummary.work.total_minutes)}</div>
+                `;
+                domainDiv.appendChild(workDiv);
+                
+                // Life Admin domain
+                const lifeAdminDiv = document.createElement('div');
+                lifeAdminDiv.style.flex = '1';
+                lifeAdminDiv.style.backgroundColor = 'var(--error-color)';
+                lifeAdminDiv.style.color = 'white';
+                lifeAdminDiv.style.padding = '10px';
+                lifeAdminDiv.style.borderRadius = '5px';
+                lifeAdminDiv.innerHTML = `
+                    <div style="font-weight: bold;">Life Admin</div>
+                    <div>${domainSummary.life_admin.count} tasks</div>
+                    <div>${formatTime(domainSummary.life_admin.total_minutes)}</div>
+                `;
+                domainDiv.appendChild(lifeAdminDiv);
+                
+                // General Life domain
+                const generalLifeDiv = document.createElement('div');
+                generalLifeDiv.style.flex = '1';
+                generalLifeDiv.style.backgroundColor = 'var(--success-color)';
+                generalLifeDiv.style.color = 'white';
+                generalLifeDiv.style.padding = '10px';
+                generalLifeDiv.style.borderRadius = '5px';
+                generalLifeDiv.innerHTML = `
+                    <div style="font-weight: bold;">General Life</div>
+                    <div>${domainSummary.general_life.count} tasks</div>
+                    <div>${formatTime(domainSummary.general_life.total_minutes)}</div>
+                `;
+                domainDiv.appendChild(generalLifeDiv);
+                
+                container.appendChild(domainDiv);
+            }
+            
+            // Next recommended task
+            if (data.next_task) {
+                container.innerHTML += `<p>Here's what I recommend you work on next:</p>`;
+                
+                const nextTask = document.createElement('div');
+                nextTask.className = 'suggestion-item';
+                nextTask.onclick = () => { selectTask(data.next_task.id); };
+                
+                let content = `<strong>${data.next_task.description}</strong>`;
+                
+                // Add domain tag
+                if (data.next_task.domain) {
+                    content += `<span class="domain-tag domain-${data.next_task.domain}">${formatDomain(data.next_task.domain)}</span>`;
+                }
+                
+                // Add meta
+                content += `<div class="task-meta">`;
+                
+                if (data.next_task.deadline) {
+                    content += `<span class="task-deadline">📅 ${data.next_task.deadline}</span>`;
+                }
+                
+                content += `<span class="task-duration">⏱️ ${data.next_task.estimated_duration} min</span>`;
+                
+                if (data.next_task.project) {
+                    content += `<span class="task-project">📁 ${data.next_task.project}</span>`;
+                }
+                
+                content += `</div>`;
+                
+                nextTask.innerHTML = content;
+                container.appendChild(nextTask);
+                
+                container.innerHTML += `<p>You can ask me for more recommendations or try "What can I do in 30 minutes?"</p>`;
+            } else {
+                container.innerHTML += `<p>You don't have any pending tasks. Try adding some tasks to get started!</p>`;
+            }
+            
+            return container;
+        }
+        
+        // Interaction Functions
+        function sendMessage() {
             const messageInput = document.getElementById('message-input');
             const message = messageInput.value.trim();
             
-            if (message) {
-                // Add user message to chat
-                addMessage(message, 'user-message');
-                
-                // Simulate system response (in real implementation, this would be an API call)
-                setTimeout(() => {
-                    addMessage("This is a placeholder response. The full chat functionality will be implemented in Task 7.", 'system-message');
-                }, 500);
-                
-                // Clear input
-                messageInput.value = '';
+            if (!message) {
+                return;
             }
-        });
-        
-        // Allow sending with Enter key
-        document.getElementById('message-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('send-button').click();
-            }
-        });
-        
-        function addMessage(text, className) {
-            const chatContainer = document.getElementById('chat-container');
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${className}`;
-            messageElement.textContent = text;
-            chatContainer.appendChild(messageElement);
             
-            // Scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            // Add user message to chat
+            addMessage(message, true);
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Show typing indicator
+            const typingIndicator = addTypingIndicator();
+            
+            // Send to API
+            fetch('/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // Process based on response type
+                processResponse(data);
+            })
+            .catch(error => {
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // Show error message
+                addMessage(`<p>Sorry, I encountered an error: ${error.message}</p>`);
+            });
         }
+        
+        function processResponse(data) {
+            // Create response based on type
+            switch(data.type) {
+                case 'suggestions':
+                    const suggestionsContent = createTaskSuggestions(data.suggestions, data.available_time);
+                    addMessage(suggestionsContent);
+                    break;
+                    
+                case 'task_added':
+                    addMessage(`<p>${data.message}</p><p>The task has been added successfully.</p>`);
+                    // Refresh task summary
+                    loadTaskSummary();
+                    break;
+                    
+                case 'help':
+                    const helpContent = createHelpContent(data.help_sections);
+                    addMessage(helpContent);
+                    break;
+                    
+                case 'calendar':
+                    const calendarContent = createCalendarView(data.summary);
+                    addMessage(calendarContent);
+                    break;
+                    
+                case 'domain_tasks':
+                    const domainContent = createDomainTasksView(data.tasks, data.domain, data.count);
+                    addMessage(domainContent);
+                    break;
+                    
+                case 'project':
+                    const projectContent = createProjectView(data.summary);
+                    addMessage(projectContent);
+                    break;
+                    
+                case 'documents':
+                    const documentsContent = createDocumentView(data.summary);
+                    addMessage(documentsContent);
+                    break;
+                    
+                case 'task_completed':
+                    addMessage(`<p>${data.message}</p>`);
+                    // Refresh task summary
+                    loadTaskSummary();
+                    break;
+                    
+                case 'task_overview':
+                    const overviewContent = createTaskOverview(data);
+                    addMessage(overviewContent);
+                    break;
+                    
+                case 'greeting':
+                    const greetingContent = createGreetingView(data);
+                    addMessage(greetingContent);
+                    break;
+                    
+                default:
+                    // For general info or unrecognized types
+                    addMessage(`<p>${data.message}</p>`);
+            }
+            
+            // Special case for incomplete task data
+            if (data.status === 'incomplete') {
+                const formContent = createTaskForm(data.missing_fields, data.parsed_data);
+                addMessage(formContent);
+            }
+        }
+        
+        function selectTask(taskId) {
+            // Mark task as active or selected
+            // This could update UI, store the task ID, etc.
+            console.log(`Task ${taskId} selected`);
+            
+            // For demonstration, let's add a message acknowledging the selection
+            addMessage(`I'll help you work on this task. Would you like to mark it as completed when done? Just say "complete task ${taskId}".`);
+        }
+        
+        function completeTask(taskId) {
+            // Show a message indicating the task is being completed
+            addMessage(`<p>Marking task ${taskId} as completed...</p>`);
+            
+            // Send request to complete the task
+            fetch(`/chat/complete-task/${taskId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMessage(`<p>${data.message}</p>`);
+                // Refresh task summary
+                loadTaskSummary();
+            })
+            .catch(error => {
+                addMessage(`<p>Error completing task: ${error.message}</p>`);
+            });
+        }
+        
+        function submitTaskForm() {
+            // Get form values
+            const description = document.getElementById('task-description').value;
+            const domain = document.getElementById('task-domain').value;
+            const duration = document.getElementById('task-duration').value;
+            const project = document.getElementById('task-project').value;
+            const deadline = document.getElementById('task-deadline').value;
+            
+            // Validate required fields
+            if (!description || !domain || !duration) {
+                addMessage(`<p>Please fill in all required fields.</p>`);
+                return;
+            }
+            
+            // Construct task string for parsing
+            let taskString = `Add task: ${description}`;
+            
+            // Add domain tag
+            taskString += ` #${domain}`;
+            
+            // Add duration tag
+            taskString += ` [${duration}m]`;
+            
+            // Add project tag if provided
+            if (project) {
+                taskString += ` @${project}`;
+            }
+            
+            // Add deadline if provided
+            if (deadline) {
+                taskString += ` due:${deadline}`;
+            }
+            
+            // Add user message to chat
+            addMessage(taskString, true);
+            
+            // Show typing indicator
+            const typingIndicator = addTypingIndicator();
+            
+            // Send to API
+            fetch('/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: taskString })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // Process response
+                processResponse(data);
+            })
+            .catch(error => {
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // Show error message
+                addMessage(`<p>Sorry, I encountered an error: ${error.message}</p>`);
+            });
+        }
+        
+        function cancelTaskForm() {
+            addMessage(`<p>Task creation cancelled.</p>`);
+        }
+        
+        function loadTaskSummary() {
+            // Fetch task summary data
+            fetch('/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: "task overview" })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const summaryDiv = document.getElementById('task-summary');
+                
+                // Basic stats
+                let content = `
+                    <div style="margin-bottom: 10px;">
+                        <div><strong>${data.pending_count}</strong> pending</div>
+                        <div><strong>${data.completed_count}</strong> completed</div>
+                    </div>
+                `;
+                
+                // Progress bar
+                const completionRate = data.completion_rate || 0;
+                const completionPercent = Math.round(completionRate * 100);
+                
+                content += `
+                    <div style="margin-bottom: 15px;">
+                        <div style="background-color: #ddd; height: 6px; border-radius: 3px; margin-top: 5px;">
+                            <div style="background-color: var(--success-color); height: 6px; width: ${completionPercent}%; border-radius: 3px;"></div>
+                        </div>
+                        <div style="font-size: 12px; text-align: right; color: #666;">${completionPercent}% complete</div>
+                    </div>
+                `;
+                
+                // Upcoming deadlines
+                if (data.upcoming_deadlines && data.upcoming_deadlines.length > 0) {
+                    content += `<div style="font-weight: bold; margin-bottom: 5px;">Upcoming Deadlines:</div>`;
+                    
+                    content += `<ul style="margin: 0; padding-left: 20px; font-size: 13px;">`;
+                    data.upcoming_deadlines.forEach(task => {
+                        content += `<li>${task.description} (${task.deadline})</li>`;
+                    });
+                    content += `</ul>`;
+                }
+                
+                // Recommended task
+                if (data.next_task) {
+                    content += `<div style="margin-top: 15px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">Recommended Next Task:</div>
+                        <div style="padding: 8px; background-color: #f0f8ff; border-radius: 5px; font-size: 13px;">
+                            ${data.next_task.description}
+                            <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                                <span class="domain-tag domain-${data.next_task.domain}">${formatDomain(data.next_task.domain)}</span>
+                                ${data.next_task.estimated_duration} min
+                            </div>
+                        </div>
+                    </div>`;
+                }
+                
+                summaryDiv.innerHTML = content;
+            })
+            .catch(error => {
+                console.error('Error loading task summary:', error);
+                document.getElementById('task-summary').innerHTML = '<p>Error loading task summary.</p>';
+            });
+        }
+        
+        function insertCommand(command) {
+            const messageInput = document.getElementById('message-input');
+            messageInput.value = command;
+            messageInput.focus();
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners
+            document.getElementById('send-button').addEventListener('click', sendMessage);
+            
+            document.getElementById('message-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Load task summary
+            loadTaskSummary();
+        });
     </script>
 </body>
 </html>

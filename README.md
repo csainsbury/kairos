@@ -7,11 +7,25 @@ kAIros is an intelligent task management application that uses domain awareness,
 kAIros integrates multiple data sources to provide smart task recommendations:
 
 - **Domain-aware task parsing**: Categorizes tasks into work, life_admin, and general_life domains
-- **External integrations**: Todoist, Google Calendar
+- **External integrations**: 
+  - **Todoist**: Sync tasks from your Todoist account
+  - **Google Calendar**: Schedule tasks as calendar events and track available time
 - **Document context**: Uploads and summarizes documents to provide project context
 - **Task ranking engine**: Suggests optimal tasks based on deadlines, estimated duration, and domain weights
 - **Natural language interface**: Simple chat-like interface for task interaction
 - **Reporting**: Daily email summaries of task completion and trends
+
+## Quick Start
+
+The easiest way to get started is using our deployment scripts:
+
+```bash
+# For development environment
+./scripts/deploy.sh --env development
+
+# For production environment
+./scripts/deploy.sh --env production
+```
 
 ## Development Setup
 
@@ -25,13 +39,31 @@ kAIros integrates multiple data sources to provide smart task recommendations:
 
 1. Clone the repository:
    ```bash
-   git clone https://your-repository/kAIros.git
+   git clone https://github.com/yourusername/kAIros.git
    cd kAIros
    ```
 
-2. Set up the development environment:
+2. Configure environment variables:
    ```bash
-   # Create a virtual environment
+   # Copy the development environment template
+   cp .env.development.template .env.development
+   
+   # Edit the environment file with your API keys and settings
+   ```
+
+3. Deploy the development environment:
+   ```bash
+   ./scripts/deploy.sh --env development
+   ```
+
+4. Access the application at http://localhost:5000
+
+### Manual Development Setup
+
+If you prefer to set up without Docker:
+
+1. Create a virtual environment:
+   ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows, use: venv\Scripts\activate
    
@@ -39,49 +71,32 @@ kAIros integrates multiple data sources to provide smart task recommendations:
    pip install -r requirements.txt
    ```
 
-3. Configure environment variables:
-   ```bash
-   # Copy the development environment template
-   cp .env.development .env
-   
-   # Edit the .env file with your API keys and settings
-   ```
-
-4. Initialize the database:
+2. Initialize the database:
    ```bash
    flask db init
    flask db migrate -m "Initial migration"
    flask db upgrade
    ```
 
-5. Run the development server:
+3. Run the development server:
    ```bash
    flask run
    ```
-
-### Using Docker for Development
-
-1. Make sure Docker and docker-compose are installed
-2. Start the development containers:
-   ```bash
-   docker-compose -f docker/docker-compose.dev.yml up
-   ```
-3. The application will be available at http://localhost:5000
 
 ## Production Deployment
 
 ### Prerequisites
 
-- Ubuntu 22.04 LTS server
+- Ubuntu server (20.04 LTS or newer recommended)
 - Docker and docker-compose installed
 - Domain name with DNS configured
 - SSL certificates (Let's Encrypt recommended)
 
-### Deployment Steps
+### Automated Deployment
 
 1. Clone the repository on your server:
    ```bash
-   git clone https://your-repository/kAIros.git
+   git clone https://github.com/yourusername/kAIros.git
    cd kAIros
    ```
 
@@ -94,36 +109,42 @@ kAIros integrates multiple data sources to provide smart task recommendations:
    nano .env.production
    ```
 
-3. Update NGINX configuration:
+3. Deploy using the script:
    ```bash
-   # Edit the NGINX configuration with your domain
-   nano nginx/conf.d/kairos.conf
+   ./scripts/deploy.sh --env production
    ```
 
-4. Set up SSL certificates:
-   ```bash
-   # Create a directory for SSL certificates
-   mkdir -p ssl_certs
-   
-   # Copy your SSL certificates or use Let's Encrypt
-   # For Let's Encrypt, use certbot on your host machine
-   ```
+4. Follow the post-deployment instructions for SSL setup
 
-5. Launch the production stack:
-   ```bash
-   docker-compose -f docker/docker-compose.prod.yml up -d
-   ```
+### Manual Deployment Steps
 
-6. Initialize the production database:
-   ```bash
-   docker-compose -f docker/docker-compose.prod.yml exec app flask db upgrade
-   ```
+See our [detailed deployment guide](docs/deployment.md) for manual deployment instructions and more advanced configuration options.
+
+## Database Management
+
+The application includes built-in database management scripts:
+
+```bash
+# Create database backup
+./scripts/backup_database.sh
+
+# Restore from backup
+./scripts/restore_database.sh /backups/kairos_20250301_120000.backup
+```
+
+## Monitoring
+
+Check the status of your deployment:
+
+```bash
+./scripts/status.sh --env production
+```
 
 ## Project Structure
 
 ```
 kAIros/
-  ├── app/
+  ├── app/                     # Application code
   │    ├── __init__.py         # App initialization
   │    ├── models.py           # Database models
   │    ├── routes.py           # API endpoints
@@ -134,6 +155,13 @@ kAIros/
   │    ├── chat.py             # Conversational interface
   │    └── utils.py            # Utility functions
   ├── tests/                   # Unit and integration tests
+  ├── scripts/                 # Deployment and maintenance scripts
+  │    ├── deploy.sh           # Deployment script
+  │    ├── backup_database.sh  # Database backup script
+  │    ├── restore_database.sh # Database restore script
+  │    └── status.sh           # Status monitoring script
+  ├── static/                  # Static assets
+  │    └── error_pages/        # Custom error pages
   ├── config.py                # Configuration settings
   ├── run.py                   # Application entry point
   ├── docker/                  # Docker configuration
@@ -142,8 +170,16 @@ kAIros/
   │    └── docker-compose.prod.yml # Production container setup
   ├── nginx/                   # NGINX configuration for production
   │    └── conf.d/             # Server configuration files
+  ├── docs/                    # Documentation
+  │    ├── deployment.md       # Detailed deployment guide
+  │    └── google_calendar_setup.md # Google Calendar API setup
   └── migrations/              # Database migration scripts
 ```
+
+## Documentation
+
+- [Deployment Guide](docs/deployment.md)
+- [Google Calendar Setup](docs/google_calendar_setup.md)
 
 ## License
 

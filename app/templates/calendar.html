@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Management - kAIros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .auth-section {
+            margin-bottom: 30px;
+        }
+        .events-section {
+            margin-bottom: 30px;
+        }
+        .sync-section {
+            margin-bottom: 30px;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-left: 4px solid #4caf50;
+            background-color: #e8f5e9;
+            display: none;
+        }
+        .error {
+            margin-top: 20px;
+            padding: 15px;
+            border-left: 4px solid #f44336;
+            background-color: #ffebee;
+            display: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4285f4;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .event-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .event-actions button {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .task-list {
+            margin-top: 15px;
+        }
+        .date-range {
+            margin-bottom: 15px;
+        }
+        .date-range input {
+            padding: 8px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>kAIros Calendar Management</h1>
+    
+    <div class="card auth-section">
+        <h2>Google Calendar Authentication</h2>
+        <p>Authenticate with Google Calendar to sync your tasks and view your events.</p>
+        <button id="auth-button">Connect to Google Calendar</button>
+        <div class="result" id="auth-result">
+            <h3>Authentication Successful</h3>
+            <p>Your Google Calendar account is now connected.</p>
+        </div>
+        <div class="error" id="auth-error">
+            <h3>Authentication Error</h3>
+            <p id="auth-error-message"></p>
+        </div>
+    </div>
+    
+    <div class="card events-section">
+        <h2>Calendar Events</h2>
+        <p>View and manage your Google Calendar events.</p>
+        
+        <div class="date-range">
+            <label for="start-date">Start Date:</label>
+            <input type="date" id="start-date">
+            <label for="end-date">End Date:</label>
+            <input type="date" id="end-date">
+            <button id="fetch-events">Fetch Events</button>
+        </div>
+        
+        <div class="loading" id="events-loading">
+            <div class="spinner"></div>
+            <p>Loading events...</p>
+        </div>
+        
+        <div id="events-container">
+            <table id="events-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="events-body">
+                    <!-- Events will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="error" id="events-error">
+            <h3>Error</h3>
+            <p id="events-error-message"></p>
+        </div>
+    </div>
+    
+    <div class="card sync-section">
+        <h2>Sync Tasks with Calendar</h2>
+        <p>Synchronize your tasks with Google Calendar to keep track of deadlines.</p>
+        
+        <div id="task-list" class="task-list">
+            <h3>Tasks with Deadlines</h3>
+            <table id="tasks-table">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Deadline</th>
+                        <th>Duration</th>
+                        <th>Domain</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tasks-body">
+                    <!-- Tasks will be loaded here -->
+                </tbody>
+            </table>
+            <button id="sync-all-tasks" style="margin-top: 15px;">Sync All Tasks</button>
+        </div>
+        
+        <div class="loading" id="sync-loading">
+            <div class="spinner"></div>
+            <p>Syncing tasks...</p>
+        </div>
+        
+        <div class="result" id="sync-result">
+            <h3>Tasks Synced Successfully</h3>
+            <p id="sync-result-message"></p>
+        </div>
+        
+        <div class="error" id="sync-error">
+            <h3>Error</h3>
+            <p id="sync-error-message"></p>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize page on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default dates for calendar range
+            const today = new Date();
+            const nextWeek = new Date();
+            nextWeek.setDate(today.getDate() + 7);
+            
+            document.getElementById('start-date').valueAsDate = today;
+            document.getElementById('end-date').valueAsDate = nextWeek;
+            
+            // Check if already authenticated
+            checkAuthStatus();
+            
+            // Load tasks with deadlines
+            loadTasksWithDeadlines();
+        });
+        
+        // Authentication button
+        document.getElementById('auth-button').addEventListener('click', function() {
+            window.location.href = '/calendar/authorize';
+        });
+        
+        // Fetch events button
+        document.getElementById('fetch-events').addEventListener('click', function() {
+            fetchCalendarEvents();
+        });
+        
+        // Sync all tasks button
+        document.getElementById('sync-all-tasks').addEventListener('click', function() {
+            syncAllTasks();
+        });
+        
+        // Check authentication status
+        function checkAuthStatus() {
+            fetch('/calendar/events?limit=1')
+            .then(response => {
+                if (response.status === 401) {
+                    // Not authenticated
+                    document.getElementById('auth-button').textContent = 'Connect to Google Calendar';
+                    return null;
+                } else {
+                    // Authenticated
+                    document.getElementById('auth-button').textContent = 'Reconnect to Google Calendar';
+                    document.getElementById('auth-result').style.display = 'block';
+                    return response.json();
+                }
+            })
+            .catch(error => {
+                console.error('Error checking auth status:', error);
+            });
+        }
+        
+        // Fetch calendar events
+        function fetchCalendarEvents() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            if (!startDate || !endDate) {
+                showEventsError('Please select start and end dates');
+                return;
+            }
+            
+            // Format dates for API
+            const startISO = new Date(startDate).toISOString();
+            const endISO = new Date(endDate).toISOString();
+            
+            // Show loading indicator
+            document.getElementById('events-loading').style.display = 'block';
+            document.getElementById('events-error').style.display = 'none';
+            
+            // Fetch events from API
+            fetch(`/calendar/events?start_date=${startISO}&end_date=${endISO}`)
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Authentication required. Please connect to Google Calendar.');
+                    }
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Failed to fetch events');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('events-loading').style.display = 'none';
+                displayEvents(data.events || []);
+            })
+            .catch(error => {
+                document.getElementById('events-loading').style.display = 'none';
+                showEventsError(error.message);
+            });
+        }
+        
+        // Display events in table
+        function displayEvents(events) {
+            const tbody = document.getElementById('events-body');
+            tbody.innerHTML = '';
+            
+            if (events.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="4" style="text-align: center;">No events found</td>';
+                tbody.appendChild(row);
+                return;
+            }
+            
+            events.forEach(event => {
+                const row = document.createElement('tr');
+                
+                // Format dates
+                const startDate = new Date(event.start);
+                const endDate = new Date(event.end);
+                const startFormatted = startDate.toLocaleString();
+                const endFormatted = endDate.toLocaleString();
+                
+                row.innerHTML = `
+                    <td>${event.title}</td>
+                    <td>${startFormatted}</td>
+                    <td>${endFormatted}</td>
+                    <td class="event-actions">
+                        <button class="delete-event" data-id="${event.id}">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-event').forEach(button => {
+                button.addEventListener('click', function() {
+                    const eventId = this.getAttribute('data-id');
+                    deleteEvent(eventId);
+                });
+            });
+        }
+        
+        // Delete event
+        function deleteEvent(eventId) {
+            if (!confirm('Are you sure you want to delete this event?')) {
+                return;
+            }
+            
+            fetch(`/calendar/events/${eventId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Failed to delete event');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Refresh events list
+                fetchCalendarEvents();
+            })
+            .catch(error => {
+                showEventsError(error.message);
+            });
+        }
+        
+        // Load tasks with deadlines
+        function loadTasksWithDeadlines() {
+            fetch('/api/tasks/with-deadlines')
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Failed to load tasks');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayTasks(data.tasks || []);
+            })
+            .catch(error => {
+                document.getElementById('tasks-body').innerHTML = 
+                    `<tr><td colspan="5" style="text-align: center;">Error loading tasks: ${error.message}</td></tr>`;
+            });
+        }
+        
+        // Display tasks in table
+        function displayTasks(tasks) {
+            const tbody = document.getElementById('tasks-body');
+            tbody.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="5" style="text-align: center;">No tasks with deadlines found</td>';
+                tbody.appendChild(row);
+                return;
+            }
+            
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                
+                // Format deadline
+                const deadline = new Date(task.deadline);
+                const deadlineFormatted = deadline.toLocaleString();
+                
+                row.innerHTML = `
+                    <td>${task.description}</td>
+                    <td>${deadlineFormatted}</td>
+                    <td>${task.estimated_duration} minutes</td>
+                    <td>${task.domain}</td>
+                    <td class="event-actions">
+                        <button class="sync-task" data-id="${task.id}">Sync to Calendar</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Add event listeners for sync buttons
+            document.querySelectorAll('.sync-task').forEach(button => {
+                button.addEventListener('click', function() {
+                    const taskId = this.getAttribute('data-id');
+                    syncTask(taskId);
+                });
+            });
+        }
+        
+        // Sync a single task
+        function syncTask(taskId) {
+            // Show loading indicator
+            document.getElementById('sync-loading').style.display = 'block';
+            document.getElementById('sync-result').style.display = 'none';
+            document.getElementById('sync-error').style.display = 'none';
+            
+            fetch(`/calendar/sync/task/${taskId}`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Failed to sync task');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('sync-loading').style.display = 'none';
+                document.getElementById('sync-result-message').textContent = `Task synced with event ID: ${data.event_id}`;
+                document.getElementById('sync-result').style.display = 'block';
+                
+                // Refresh events list after syncing
+                fetchCalendarEvents();
+            })
+            .catch(error => {
+                document.getElementById('sync-loading').style.display = 'none';
+                showSyncError(error.message);
+            });
+        }
+        
+        // Sync all tasks
+        function syncAllTasks() {
+            // Collect all task IDs
+            const taskIds = [];
+            document.querySelectorAll('.sync-task').forEach(button => {
+                taskIds.push(button.getAttribute('data-id'));
+            });
+            
+            if (taskIds.length === 0) {
+                showSyncError('No tasks to sync');
+                return;
+            }
+            
+            // Show loading indicator
+            document.getElementById('sync-loading').style.display = 'block';
+            document.getElementById('sync-result').style.display = 'none';
+            document.getElementById('sync-error').style.display = 'none';
+            
+            fetch('/calendar/sync/tasks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ task_ids: taskIds })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Failed to sync tasks');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('sync-loading').style.display = 'none';
+                
+                const successCount = Object.values(data.results).filter(r => r !== "Failed").length;
+                document.getElementById('sync-result-message').textContent = 
+                    `Successfully synced ${successCount} out of ${taskIds.length} tasks`;
+                document.getElementById('sync-result').style.display = 'block';
+                
+                // Refresh events list after syncing
+                fetchCalendarEvents();
+            })
+            .catch(error => {
+                document.getElementById('sync-loading').style.display = 'none';
+                showSyncError(error.message);
+            });
+        }
+        
+        // Show events error
+        function showEventsError(message) {
+            const errorElement = document.getElementById('events-error');
+            document.getElementById('events-error-message').textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        // Show auth error
+        function showAuthError(message) {
+            const errorElement = document.getElementById('auth-error');
+            document.getElementById('auth-error-message').textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        // Show sync error
+        function showSyncError(message) {
+            const errorElement = document.getElementById('sync-error');
+            document.getElementById('sync-error-message').textContent = message;
+            errorElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

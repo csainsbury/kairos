@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - kAIros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info span {
+            margin-right: 15px;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-menu li {
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-menu a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            border-left: 4px solid transparent;
+        }
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: #444;
+            border-left-color: #4a90e2;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .stat-card.warning {
+            border-left: 4px solid #f39c12;
+        }
+        .stat-card.danger {
+            border-left: 4px solid #e74c3c;
+        }
+        .stat-card.success {
+            border-left: 4px solid #27ae60;
+        }
+        .stat-card.info {
+            border-left: 4px solid #3498db;
+        }
+        .btn {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #357bd8;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        .logout-form {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>kAIros Admin</h1>
+        <div class="user-info">
+            <span>{{ username }}</span>
+            <form class="logout-form" action="{{ url_for('admin.logout') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="{{ url_for('admin.dashboard') }}" class="active">Dashboard</a></li>
+            <li><a href="{{ url_for('admin.api_keys') }}">API Keys</a></li>
+            <li><a href="{{ url_for('admin.security_log') }}">Security Log</a></li>
+            <li><a href="{{ url_for('admin.ip_blocks') }}">IP Blocks</a></li>
+        </ul>
+    </div>
+    
+    <div class="content">
+        <h2>System Overview</h2>
+        
+        <div class="dashboard-grid">
+            <div class="stat-card warning">
+                <div class="stat-label">API Keys Needing Rotation</div>
+                <div class="stat-value" id="key-rotation-count">-</div>
+                <a href="{{ url_for('admin.api_keys') }}" class="btn">Manage Keys</a>
+            </div>
+            
+            <div class="stat-card danger">
+                <div class="stat-label">Blocked IPs</div>
+                <div class="stat-value" id="blocked-ip-count">-</div>
+                <a href="{{ url_for('admin.ip_blocks') }}" class="btn">View Blocks</a>
+            </div>
+            
+            <div class="stat-card info">
+                <div class="stat-label">Active Users</div>
+                <div class="stat-value" id="active-users">-</div>
+            </div>
+            
+            <div class="stat-card success">
+                <div class="stat-label">System Status</div>
+                <div class="stat-value" id="system-status">-</div>
+                <a href="{{ url_for('main.health_check') }}" class="btn" target="_blank">Health Check</a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Security Recommendations</h3>
+            <ul id="security-recommendations">
+                <li>Loading recommendations...</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Fetch dashboard data
+        fetch('/admin/dashboard-data', {
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update API key rotation count
+            document.getElementById('key-rotation-count').textContent = data.keys_needing_rotation || '0';
+            
+            // Update blocked IP count
+            document.getElementById('blocked-ip-count').textContent = data.blocked_ips || '0';
+            
+            // Update active users
+            document.getElementById('active-users').textContent = data.active_users || '0';
+            
+            // Update system status
+            const systemStatus = document.getElementById('system-status');
+            systemStatus.textContent = data.system_status || 'Unknown';
+            
+            // Update recommendations
+            const recommendationsList = document.getElementById('security-recommendations');
+            recommendationsList.innerHTML = '';
+            
+            if (data.recommendations && data.recommendations.length > 0) {
+                data.recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.textContent = rec;
+                    recommendationsList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = 'No security recommendations at this time.';
+                recommendationsList.appendChild(li);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching dashboard data:', error);
+        });
+        
+        // Check session status periodically
+        setInterval(() => {
+            fetch('/admin/session-check', {
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token }}'
+                }
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    // Session expired, redirect to login
+                    window.location.href = '{{ url_for("admin.login") }}';
+                }
+            })
+            .catch(error => {
+                console.error('Session check error:', error);
+            });
+        }, 60000); // Check every minute
+    </script>
+</body>
+</html>
